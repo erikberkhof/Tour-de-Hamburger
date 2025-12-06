@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tour de Hamburger</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS (kaart-bibliotheek) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    header {
+      padding: 14px 18px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      z-index: 1000;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    #map {
+      flex: 1;
+      height: 100%;
+      width: 100%;
+    }
+
+    aside {
+      width: 280px;
+      max-width: 100%;
+      background: rgba(0,0,0,0.92);
+      border-left: 1px solid rgba(255,255,255,0.08);
+      padding: 12px 14px;
+      overflow-y: auto;
+    }
+
+    aside h2 {
+      margin-top: 0;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.9;
+    }
+
+    .stop {
+      margin-bottom: 14px;
+      padding: 10px 10px;
+      border-radius: 10px;
+      background: radial-gradient(circle at top left, #ffb34722, #000);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease,
+        background 0.2s ease;
+    }
+
+    .stop:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      background: radial-gradient(circle at top left, #ffb34733, #000);
+    }
+
+    .stop-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    .stop-address {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .stop a {
+      font-size: 0.8rem;
+      color: #ffb347;
+      text-decoration: none;
+    }
+
+    .stop a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      text-align: center;
+      opacity: 0.7;
+      background: #000;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 768px) {
+      main {
+        flex-direction: column;
+      }
+      aside {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+      }
+      .stop {
+        min-width: 220px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <h1>Tour de Hamburger</h1>
+      <p>Drie burgerstops waar ik je graag mee naartoe neem. Klik op een marker of kaartje.</p>
+    </header>
+
+    <main>
+      <div id="map"></div>
+
+      <aside>
+        <h2>Onze stops</h2>
+
+        <div class="stop" data-id="bonburger">
+          <div class="stop-title">1. Bon Burger – Oud-West</div>
+          <div class="stop-address">Jacob van Lennepkade 334D, 1053 NJ Amsterdam</div>
+          <a href="https://www.instagram.com/bonburgerbar/" target="_blank" rel="noopener">
+            👉 Instagram / info
+          </a>
+        </div>
+
+        <div class="stop" data-id="paindemie">
+          <div class="stop-title">2. Paindemie – Kinkerstraat</div>
+          <div class="stop-address">Kinkerstraat 122, 1053 ED Amsterdam</div>
+          <a href="https://www.paindemie-amsterdam.com/" target="_blank" rel="noopener">
+            👉 Website
+          </a>
+        </div>
+
+        <div class="stop" data-id="beefchief">
+          <div class="stop-title">3. The Beef Chief – Noord</div>
+          <div class="stop-address">Gedempt Hamerkanaal 85a, 1021 KP Amsterdam</div>
+          <a href="https://www.thebeefchief.com/" target="_blank" rel="noopener">
+            👉 Website
+          </a>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      Tour de Hamburger – speciaal voor jou 🍔
+    </footer>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    const map = L.map("map").setView([52.372, 4.895], 12.8);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    const locations = {
+      bonburger: {
+        name: "Bon Burger – Oud-West",
+        coords: [52.3683, 4.8697],
+        url: "https://www.instagram.com/bonburgerbar/"
+      },
+      paindemie: {
+        name: "Paindemie – Kinkerstraat",
+        coords: [52.3674, 4.8664],
+        url: "https://www.paindemie-amsterdam.com/"
+      },
+      beefchief: {
+        name: "The Beef Chief – Noord",
+        coords: [52.3927, 4.9288],
+        url: "https://www.thebeefchief.com/"
+      }
+    };
+
+    const markers = {};
+    const bounds = [];
+
+    Object.entries(locations).forEach(([id, loc]) => {
+      const marker = L.marker(loc.coords)
+        .addTo(map)
+        .bindPopup(
+          `<strong>${loc.name}</strong><br><a href="${loc.url}" target="_blank" rel="noopener">Website openen</a>`
+        );
+      markers[id] = marker;
+      bounds.push(loc.coords);
+    });
+
+    if (bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+
+    document.querySelectorAll(".stop").forEach((el) => {
+      el.addEventListener("click", () => {
+        const id = el.getAttribute("data-id");
+        const loc = locations[id];
+        if (!loc) return;
+        map.setView(loc.coords, 16);
+        markers[id].openPopup();
+      });
+    });
+  </script>
+</body>
+</html>
