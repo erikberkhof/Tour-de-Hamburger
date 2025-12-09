@@ -5,236 +5,251 @@
   <title>Tour de Hamburger</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Leaflet CSS (kaart) - zonder integrity/crossorigin -->
+  <!-- Leaflet CSS (kaart-bibliotheek) -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
   />
 
   <style>
-    :root {
-      color-scheme: dark;
-    }
-
     html, body {
       height: 100%;
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
         sans-serif;
-      background: #0b0b0b;
+      background: #111;
       color: #fff;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
     }
 
     #app {
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      height: 100%;
     }
 
     header {
-      padding: 16px 18px 10px;
-      background: radial-gradient(circle at top left, #ff8a3c33, #000);
-      border-bottom: 1px solid #333;
+      padding: 14px 18px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      z-index: 1000;
     }
 
     header h1 {
-      margin: 0 0 4px;
-      font-size: 1.8rem;
-      letter-spacing: 0.03em;
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
     header p {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #ddd;
+      margin: 4px 0 0;
+      font-size: 0.9rem;
+      opacity: 0.8;
     }
 
     main {
       flex: 1;
-      padding: 12px 18px 30px;
-      max-width: 1100px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    .intro {
-      margin-bottom: 16px;
-      font-size: 0.98rem;
-      color: #ddd;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.3fr);
-      gap: 18px;
-      align-items: flex-start;
-      margin-bottom: 24px;
+      display: flex;
+      min-height: 0;
     }
 
     #map {
+      flex: 1;
+      height: 100%;
       width: 100%;
-      height: 360px;
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px #000c;
-      border: 1px solid #333;
     }
 
-    .card {
-      background: #121212;
-      border-radius: 14px;
-      padding: 14px 14px 10px;
-      border: 1px solid #333;
-      box-shadow: 0 8px 20px #0008;
+    aside {
+      width: 280px;
+      max-width: 100%;
+      background: rgba(0,0,0,0.92);
+      border-left: 1px solid rgba(255,255,255,0.08);
+      padding: 12px 14px;
+      overflow-y: auto;
     }
 
-    .card h2 {
+    aside h2 {
       margin-top: 0;
-      margin-bottom: 6px;
-      font-size: 1.1rem;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.9;
     }
 
-    .spots {
-      list-style: none;
-      padding: 0;
-      margin: 8px 0 4px;
-      font-size: 0.92rem;
+    .stop {
+      margin-bottom: 14px;
+      padding: 10px 10px;
+      border-radius: 10px;
+      background: radial-gradient(circle at top left, #ffb34722, #000);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease,
+        background 0.2s ease;
     }
 
-    .spots li {
-      margin-bottom: 8px;
-      padding: 8px;
-      border-radius: 8px;
-      background: #1a1a1a;
+    .stop:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      background: radial-gradient(circle at top left, #ffb34733, #000);
     }
 
-    .spots strong {
-      display: inline-block;
+    .stop-title {
+      font-weight: 600;
+      font-size: 0.95rem;
       margin-bottom: 2px;
     }
 
-    .spots a {
-      color: #ffb24a;
+    .stop-address {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .stop a {
+      font-size: 0.8rem;
+      color: #ffb347;
       text-decoration: none;
     }
 
-    .spots a:hover {
+    .stop a:hover {
       text-decoration: underline;
     }
 
-    .hint {
-      font-size: 0.78rem;
-      color: #aaa;
-      margin-top: 6px;
-    }
-
-    /* DATUMPRIKKER */
-
-    .date-picker-section {
-      margin-top: 10px;
-      padding: 16px 14px 18px;
-      background: #101010;
-      color: #fff;
-      border-radius: 14px;
-      border: 1px solid #333;
-      box-shadow: 0 8px 20px #0008;
-    }
-
-    .date-picker-section h2 {
-      margin: 0 0 6px;
-      font-size: 1.2rem;
-    }
-
-    .date-picker-info {
-      margin: 0 0 14px;
-      font-size: 0.9rem;
-      color: #ccc;
-    }
-
-    .date-picker-info span {
-      display: inline-block;
-      margin-right: 10px;
-    }
-
-    .legend-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 4px;
-      vertical-align: middle;
-    }
-
-    .legend-me {
-      background: #2ecc71;
-    }
-
-    .legend-overlap {
-      background: #f1c40f;
-    }
-
-    .calendar-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .calendar {
-      display: inline-block;
-      padding: 10px;
-      background: #181818;
-      border-radius: 10px;
-      border: 1px solid #333;
-    }
-
-    .calendar h3 {
-      text-align: center;
-      margin: 0 0 8px;
-      font-size: 0.98rem;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(7, 28px);
-      gap: 4px;
-    }
-
-    .weekday {
-      font-size: 0.7rem;
-      text-align: center;
-      color: #999;
-    }
-
-    .day {
-      width: 28px;
-      height: 28px;
-      background: #333;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
-      font-size: 0.75rem;
-    }
-
-    .day.available {
-      background: #2ecc71;
-      color: #000;
-    }
-
-    .day.overlap {
-      background: #f1c40f;
-      color: #000;
-    }
-
     footer {
-      padding: 10px 18px 16px;
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      text-align: center;
+      opacity: 0.7;
+      background: #000;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
 
+    @media (max-width: 768px) {
+      main {
+        flex-direction: column;
+      }
+      aside {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+      }
+      .stop {
+        min-width: 220px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <h1>Tour de Hamburger</h1>
+      <p>Drie burgerstops waar wij jullie graag mee naartoe nemen. Klik op een marker of kaartje.</p>
+    </header>
+
+    <main>
+      <div id="map"></div>
+
+      <aside>
+        <h2>Onze stops</h2>
+
+        <div class="stop" data-id="bonburger">
+          <div class="stop-title">1. Bon Burger – Oud-West</div>
+          <div class="stop-address">Jacob van Lennepkade 334D, 1053 NJ Amsterdam</div>
+          <a href="https://www.instagram.com/bonburgerbar/" target="_blank" rel="noopener">
+            👉 Instagram / info
+          </a>
+        </div>
+
+        <div class="stop" data-id="paindemie">
+          <div class="stop-title">2. Paindemie – Kinkerstraat</div>
+          <div class="stop-address">Kinkerstraat 122, 1053 ED Amsterdam</div>
+          <a href="https://www.paindemie-amsterdam.com/" target="_blank" rel="noopener">
+            👉 Website
+          </a>
+        </div>
+
+        <div class="stop" data-id="beefchief">
+          <div class="stop-title">3. The Beef Chief – Noord</div>
+          <div class="stop-address">Gedempt Hamerkanaal 85a, 1021 KP Amsterdam</div>
+          <a href="https://www.thebeefchief.com/" target="_blank" rel="noopener">
+            👉 Website
+          </a>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      Tour de Hamburger – speciaal voor jullie 🍔
+    </footer>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    const map = L.map("map").setView([52.372, 4.895], 12.8);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    const locations = {
+      bonburger: {
+        name: "Bon Burger – Oud-West",
+        coords: [52.3683, 4.8697],
+        url: "https://www.instagram.com/bonburgerbar/"
+      },
+      paindemie: {
+        name: "Paindemie – Kinkerstraat",
+        coords: [52.3674, 4.8664],
+        url: "https://www.paindemie-amsterdam.com/"
+      },
+      beefchief: {
+        name: "The Beef Chief – Noord",
+        coords: [52.3927, 4.9288],
+        url: "https://www.thebeefchief.com/"
+      }
+    };
+
+    const markers = {};
+    const bounds = [];
+
+    Object.entries(locations).forEach(([id, loc]) => {
+      const marker = L.marker(loc.coords)
+        .addTo(map)
+        .bindPopup(
+          `<strong>${loc.name}</strong><br><a href="${loc.url}" target="_blank" rel="noopener">Website openen</a>`
+        );
+      markers[id] = marker;
+      bounds.push(loc.coords);
+    });
+
+    if (bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+
+    document.querySelectorAll(".stop").forEach((el) => {
+      el.addEventListener("click", () => {
+        const id = el.getAttribute("data-id");
+        const loc = locations[id];
+        if (!loc) return;
+        map.setView(loc.coords, 16);
+        markers[id].openPopup();
+      });
+    });
+  </script>
+</body>
+</html>
